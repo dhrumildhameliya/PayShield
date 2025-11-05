@@ -23,14 +23,14 @@ db = mysql.connector.connect(
     host="localhost",
     user="root",
     password="",
-    database="otp_system1"
+    database="payshield"
 )
 cursor = db.cursor()
 
 # Send OTP Email
 def send_otp(email, otp):
-    sender_email = ""      # your gmail
-    sender_password =""   # your gmail app password
+    sender_email = "payshield77@gmail.com"      # your gmail
+    sender_password ="jevapqmlljxqkjyj"   # your gmail app password
     msg = MIMEText(f"Your OTP is: {otp}\nIt will expire in 5 minutes.")
     msg['Subject'] = "Login OTP Verification"
     msg['From'] = sender_email
@@ -225,7 +225,7 @@ def create_bank_account():
         host='localhost',
         user='root',
         password='',
-        database='otp_system1'
+        database='payshield'
     )
     cursor = conn.cursor(dictionary=True)
 
@@ -291,8 +291,8 @@ def share_qr(upi_id):
 
 #wallet email otp
 def send_email(to_email, subject, otp):
-    sender_email = ""
-    sender_password = ""  # Use App Password (not your real one)
+    sender_email = "payshield77@gmail.com"
+    sender_password = "jevapqmlljxqkjyj"  # Use App Password (not your real one)
 
     # msg = MIMEMultipart()
     msg = MIMEMultipart("alternative")
@@ -359,8 +359,8 @@ def send_email(to_email, subject, otp):
 #wallet message send after cretaed
 
 def send_wallet_created_email(to_email, username, wallet_balance):
-    sender_email = ""  # change to your Gmail
-    sender_password = ""  # use your App Password, not your login password
+    sender_email = "payshield77@gmail.com"  # change to your Gmail
+    sender_password = "jevapqmlljxqkjyj"  # use your App Password, not your login password
 
     msg = MIMEMultipart("alternative")
     msg["From"] = f"PayShield <{sender_email}>"
@@ -413,7 +413,7 @@ def wallet():
     user_email = session.get('email')
 
     conn = mysql.connector.connect(
-        host='localhost', user='root', password='', database='otp_system1'
+        host='localhost', user='root', password='', database='payshield'
     )
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM bank_accounts WHERE user_id = %s", (user_id,))
@@ -481,7 +481,7 @@ def wallet_verify():
 
         if entered_otp == stored_otp and session.get('wallet_for_user_id') == user_id:
             conn = mysql.connector.connect(
-                host='localhost', user='root', password='', database='otp_system1'
+                host='localhost', user='root', password='', database='payshield'
             )
             cursor = conn.cursor()
 
