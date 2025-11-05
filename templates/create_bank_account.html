@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Bank Account - PayShield</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+
+<body class="bg-light">
+
+  <div class="container mt-5">
+    <div class="card shadow-lg p-4">
+      <h3 class="text-center mb-4">Your Bank Account</h3>
+
+      {% if account %}
+      <div class="alert alert-info">
+        <p><strong>Account Number:</strong> {{ account.account_number }}</p>
+        <p><strong>IFSC Code:</strong> {{ account.ifsc_code }}</p>
+        <p><strong>Debit Card:</strong> {{ account.debit_card_number }}</p>
+        <p><strong>Wallet Balance:</strong> ₹{{ account.wallet_balance }}</p>
+
+        {% if account.upi_id %}
+        <p><strong>UPI ID:</strong> {{ account.upi_id }}</p>
+        <!-- {% if account.wallet_created %}
+        <div class="mt-3 alert alert-success">Wallet is active ✅ (created on {{ account.wallet_created_at }})</div>
+        {% else %}
+        <div class="mt-3">
+          <a href="{{ url_for('wallet') }}" class="btn btn-outline-primary w-100">Create Wallet</a>
+        </div>
+        {% endif %} -->
+        {% if account.wallet_created %}
+        <div class="alert alert-success mt-3">
+          <b>Wallet Created ✅</b><br>
+          Balance: ₹{{ account.wallet_balance }}<br>
+          Created On: {{ account.wallet_created_at }}
+        </div>
+        {% else %}
+        <a href="{{ url_for('wallet') }}" class="btn btn-outline-primary w-100 mt-3">Create Wallet</a>
+        {% endif %}
+
+        <div class="text-center">
+          <h6 class="mt-3">Your UPI QR Code</h6>
+          <img src="{{ url_for('upi_qr', upi_id=account.upi_id) }}" alt="UPI QR Code" class="img-fluid mb-2"
+            style="max-width:200px;">
+          <br>
+          <a href="{{ url_for('upi_qr', upi_id=account.upi_id) }}" download="upi_qr.png"
+            class="btn btn-success btn-sm">Download QR Code</a>
+          <a href="{{ url_for('share_qr', upi_id=account.upi_id) }}" class="btn btn-success btn-sm">
+            Share QR + UPI Link
+          </a>
+        </div>
+      </div>
+      {% else %}
+      <form method="POST">
+        <input type="hidden" name="create_upi" value="1">
+        <button type="submit" class="btn btn-warning w-100 mt-3">Create UPI ID</button>
+      </form>
+      {% endif %}
+    </div>
+    {% else %}
+    <form method="POST">
+      <input type="hidden" name="create_account" value="1">
+      <button type="submit" class="btn btn-primary w-100">Create Bank Account</button>
+    </form>
+    {% endif %}
+
+    <div class="text-center mt-3">
+      <a href="{{ url_for('profile') }}" class="btn btn-secondary w-100">Back to Profile</a>
+    </div>
+  </div>
+  </div>
+
+</body>
+
+</html>

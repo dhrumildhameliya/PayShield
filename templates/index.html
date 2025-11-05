@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PayShield - Simplify Your Payments</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+
+    <style>
+        /* 🌌 Gradient background across the site */
+        body {
+            background: linear-gradient(145deg, #001F3F, #004E89, #0096C7, #00B4D8);
+            background-attachment: fixed;
+            color: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Navbar adjustments */
+        .navbar {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .navbar-brand,
+        .nav-link {
+            color: #ffffff !important;
+        }
+
+        .nav-link:hover {
+            color: #00B4D8 !important;
+        }
+
+        /* Hero Section */
+        .hero {
+            color: #ffffff;
+            background: transparent;
+            padding-top: 5rem;
+            padding-bottom: 5rem;
+        }
+
+        .hero .btn-primary {
+            background-color: #00B4D8;
+            border: none;
+        }
+
+        .hero .btn-outline-primary {
+            border: 2px solid #00B4D8;
+            color: #00B4D8;
+        }
+
+        .hero .btn-outline-primary:hover {
+            background-color: #00B4D8;
+            color: #ffffff;
+        }
+
+        .logo-img {
+            height: 50px;
+            margin-right: 15px;
+        }
+
+        /* Card and Section Styles */
+        section {
+            background: transparent;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f8f9fa;
+            border: none;
+            border-radius: 12px;
+            backdrop-filter: blur(6px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 20px rgba(0, 180, 216, 0.3);
+        }
+
+        .feature-card i {
+            color: #00E0FF;
+        }
+
+        .text-primary {
+            color: #00E0FF !important;
+        }
+
+        /* CTA Section */
+        .bg-primary {
+            background-color: #00B4D8 !important;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(0, 31, 63, 0.8);
+            backdrop-filter: blur(6px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background-color: #00B4D8;
+            border-color: #00B4D8;
+        }
+
+        .btn-primary:hover {
+            background-color: #0096C7;
+            border-color: #0096C7;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: #00B4D8;
+            color: #fff;
+        }
+
+        /* Responsive Enhancements */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm sticky-top">
+        <div class="container">
+            <img src="{{ url_for('static', filename='logo.svg') }}" class="logo-img" alt="PayShield logo">
+            PayShield
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#why">Why Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="register">Register</a></li>
+                    <li class="nav-item"><a class="nav-link" href="login">Login</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero text-center py-5">
+        <div class="container py-5">
+            <h1 class="fw-bold display-5">Fast, Secure, and Smart Payments</h1>
+            <p class="lead mt-3">Experience the new era of digital payments with PayShield. Pay anyone, anytime,
+                anywhere.</p>
+            <div class="mt-4">
+                <a href="#" class="btn btn-primary btn-lg me-3">Get Started</a>
+                <a href="#" class="btn btn-outline-primary btn-lg">Download App</a>
+            </div>
+            <div class="container d-flex justify-content-center">
+                <a class="navbar-brand d-flex align-items-center fw-bold text-primary" href="#">
+                    <i class="bi bi-shield-lock-fill fs-3 me-2"></i> PayShield
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="py-5 bg-light">
+        <div class="container text-center">
+            <h2 class="fw-bold mb-5 text-primary">What You Can Do</h2>
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="feature-card p-4 shadow-sm rounded" style="background-color: #004E89; color: white;">
+
+                        <i class="bi bi-send fs-1 text-primary"></i>
+                        <h5 class="mt-3 fw-semibold">Send Money</h5>
+                        <p>Transfer money instantly to friends and family.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="feature-card p-4 shadow-sm rounded" style="background-color: #004E89; color: white;">
+                        <i class="bi bi-phone-fill fs-1 text-primary"></i>
+                        <h5 class="mt-3 fw-semibold">Mobile Recharge</h5>
+                        <p>Recharge your mobile instantly with just a few taps.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="feature-card p-4 shadow-sm rounded" style="background-color: #004E89; color: white;">
+                        <i class="bi bi-lightning-charge-fill fs-1 text-primary"></i>
+                        <h5 class="mt-3 fw-semibold">Pay Bills</h5>
+                        <p>Pay your electricity, water, and DTH bills easily.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="feature-card p-4 shadow-sm rounded" style="background-color: #004E89; color: white;">
+                        <i class="bi bi-gift-fill fs-1 text-primary"></i>
+                        <h5 class="mt-3 fw-semibold">Earn Rewards</h5>
+                        <p>Get cashback and rewards on every transaction!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section id="why" class="py-5">
+        <div class="container text-center">
+            <h2 class="fw-bold mb-5 text-primary">Why Choose PayShield?</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow p-4">
+                        <i class="bi bi-shield-check text-primary fs-1 mb-3"></i>
+                        <h5>Bank-Grade Security</h5>
+                        <p>Your transactions are protected with industry-leading encryption.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow p-4">
+                        <i class="bi bi-speedometer2 text-primary fs-1 mb-3"></i>
+                        <h5>Instant Processing</h5>
+                        <p>Lightning-fast transactions with zero delays or interruptions.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow p-4">
+                        <i class="bi bi-people text-primary fs-1 mb-3"></i>
+                        <h5>Trusted by Millions</h5>
+                        <p>Join a growing community of secure digital payment users.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fraud Detection Section -->
+    <section id="fraud" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="fw-bold mb-4 text-primary text-center">Fraud Detection & Security Insights</h2>
+
+            <!-- Fraud Overview Cards -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <div class="card p-4 shadow-sm text-center" style="background-color: #004E89; color: white;">
+                        <i class="bi bi-currency-dollar fs-2 text-primary mb-2"></i>
+                        <h5>Total Transactions</h5>
+                        <p id="total-transactions">12,450</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-4 shadow-sm text-center" style="background-color: #004E89; color: white;">
+                        <i class="bi bi-exclamation-triangle-fill fs-2 text-warning mb-2"></i>
+                        <h5>Fraud Alerts</h5>
+                        <p id="fraud-alerts">27</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-4 shadow-sm text-center" style="background-color: #004E89; color: white;">
+                        <i class="bi bi-person-check fs-2 text-danger mb-2"></i>
+                        <h5>Suspicious Logins</h5>
+                        <p id="suspicious-logins">5</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card p-3 shadow-sm">
+                        <h6 class="fw-semibold mb-3 text-center">Fraud Types</h6>
+                        <canvas id="fraudTypeChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card p-3 shadow-sm">
+                        <h6 class="fw-semibold mb-3 text-center">Daily Transactions</h6>
+                        <canvas id="dailyTransactionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fraud Alert Banner -->
+            <div class="alert alert-warning alert-dismissible fade show mt-5 text-center" role="alert"
+                id="fraud-alert-banner">
+                ⚠️ Suspicious login detected! Please verify your account.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Fraud Types Bar Chart
+        const ctxFraud = document.getElementById('fraudTypeChart').getContext('2d');
+        const fraudTypeChart = new Chart(ctxFraud, {
+            type: 'bar',
+            data: {
+                labels: ['Phishing', 'UPI Scam', 'Card Cloning', 'Refund Scam', 'Unauthorized Login'],
+                datasets: [{
+                    label: 'Number of Fraud Cases',
+                    data: [12, 5, 7, 3, 8],
+                    backgroundColor: ['#0d6efd', '#6610f2', '#198754', '#fd7e14', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Daily Transactions Line Chart
+        const ctxDaily = document.getElementById('dailyTransactionChart').getContext('2d');
+        const dailyTransactionChart = new Chart(ctxDaily, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Transactions',
+                    data: [1200, 1500, 1300, 1700, 1600, 1400, 1800],
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.2)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    </script>
+
+    <!-- CTA -->
+    <section class="text-center py-5 bg-primary text-white">
+        <div class="container">
+            <h2 class="fw-bold mb-3">Get Started with PayShield Today!</h2>
+            <p class="mb-4">Enjoy a seamless, secure payment experience.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-4">
+        <div class="container">
+            <p class="mb-2">&copy; 2025 PayShield. All Rights Reserved.</p>
+            <div>
+                <a href="#" class="text-white me-3"><i class="bi bi-facebook"></i></a>
+                <a href="#" class="text-white me-3"><i class="bi bi-twitter"></i></a>
+                <a href="#" class="text-white me-3"><i class="bi bi-instagram"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
