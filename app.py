@@ -29,8 +29,8 @@ cursor = db.cursor()
 
 # Send OTP Email
 def send_otp(email, otp):
-    sender_email = "payshield77@gmail.com"      # your gmail
-    sender_password ="jevapqmlljxqkjyj"   # your gmail app password
+    sender_email = ""      # your gmail
+    sender_password =""   # your gmail app password
     msg = MIMEText(f"Your OTP is: {otp}\nIt will expire in 5 minutes.")
     msg['Subject'] = "Login OTP Verification"
     msg['From'] = sender_email
@@ -291,8 +291,8 @@ def share_qr(upi_id):
 
 #wallet email otp
 def send_email(to_email, subject, otp):
-    sender_email = "payshield77@gmail.com"
-    sender_password = "jevapqmlljxqkjyj"  # Use App Password (not your real one)
+    sender_email = ""
+    sender_password = ""  # Use App Password (not your real one)
 
     # msg = MIMEMultipart()
     msg = MIMEMultipart("alternative")
@@ -359,8 +359,8 @@ def send_email(to_email, subject, otp):
 #wallet message send after cretaed
 
 def send_wallet_created_email(to_email, username, wallet_balance):
-    sender_email = "payshield77@gmail.com"  # change to your Gmail
-    sender_password = "jevapqmlljxqkjyj"  # use your App Password, not your login password
+    sender_email = ""  # change to your Gmail
+    sender_password = ""  # use your App Password, not your login password
 
     msg = MIMEMultipart("alternative")
     msg["From"] = f"PayShield <{sender_email}>"
