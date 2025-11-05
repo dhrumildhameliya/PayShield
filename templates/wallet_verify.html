@@ -1,4 +1,4 @@
-<!doctype html>
+<!-- <!doctype html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -30,4 +30,174 @@
   </div>
 </div>
 </body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Wallet - PayShield</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #e3f2fd, #e8f5e9);
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 25px;
+    }
+
+    .logo-img {
+      width: 50px;
+      height: 50px;
+    }
+
+    .brand {
+      font-weight: 700;
+      color: #004E89;
+      font-size: 1.5rem;
+    }
+
+    .tag {
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    /* OTP Card */
+    .verify-card {
+      width: 100%;
+      max-width: 420px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+      padding: 30px 25px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .verify-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .otp-icon {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #004E89, #007BFF);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 30px;
+      margin: 0 auto 15px;
+    }
+
+    h4 {
+      color: #004E89;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    input.form-control {
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      letter-spacing: 3px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #1B5E20, #43A047);
+      border: none;
+      border-radius: 10px;
+      font-weight: 500;
+      padding: 10px;
+      font-size: 15px;
+    }
+
+    .btn-success:hover {
+      background: linear-gradient(135deg, #155d17, #388E3C);
+    }
+
+    .btn-secondary {
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 14px;
+    }
+
+    .alert-info {
+      border-radius: 10px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 576px) {
+      .verify-card {
+        padding: 25px 15px;
+      }
+
+      .otp-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 26px;
+      }
+
+      h4 {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <img src="{{ url_for('static', filename='logo.svg') }}" class="logo-img" alt="PayShield Logo">
+    <div>
+      <div class="brand">PayShield</div>
+      <div class="tag">Secure payments, simplified</div>
+    </div>
+  </div>
+
+  <!-- Verify Wallet Card -->
+  <div class="verify-card">
+    <div class="otp-icon">🔐</div>
+    <h4>Verify Your Wallet</h4>
+    <p class="text-muted mb-4">Enter the 6-digit OTP sent to your registered email or phone.</p>
+
+    <form method="POST">
+      <div class="mb-3">
+        <input name="otp" type="text" class="form-control" pattern="\d{6}" maxlength="6" required
+          placeholder="Enter OTP">
+      </div>
+      <button class="btn btn-success w-100" type="submit">Verify OTP</button>
+    </form>
+
+    {% if debug_otp %}
+    <div class="alert alert-info mt-3">
+      <strong>DEBUG OTP:</strong> {{ debug_otp }}
+    </div>
+    {% endif %}
+
+    <a href="{{ url_for('wallet') }}" class="btn btn-secondary w-100 mt-3">← Back</a>
+  </div>
+
+</body>
 </html>
+

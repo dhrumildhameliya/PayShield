@@ -306,7 +306,7 @@ def send_email(to_email, subject, otp):
       <table width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden;">
         <tr style="background-color: #0066cc;">
           <td style="padding: 20px; text-align: center; color: #fff;">
-            <img src="https://i.ibb.co/3rfvF7m/payshield-logo.png" alt="PayShield Logo" width="60" style="vertical-align: middle; margin-right: 8px;">
+            <img src="https://github.com/dhrumildhameliya/PayShield/blob/main/static/logo.svg" alt="PayShield Logo" width="60" style="vertical-align: middle; margin-right: 8px;">
             <span style="font-size: 22px; font-weight: bold;">PayShield Security</span>
           </td>
         </tr>
@@ -372,14 +372,14 @@ def send_wallet_created_email(to_email, username, wallet_balance):
     <body style="font-family:Arial, sans-serif; background-color:#f4f7fb; margin:0; padding:0;">
       <div style="max-width:600px;margin:30px auto;background:#fff;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);padding:20px;">
         <div style="text-align:center;">
-          <img src="https://i.ibb.co/QvWbJhy/payshield-logo.png" alt="PayShield" style="width:120px;margin-bottom:10px;">
-          <h2 style="color:#0066cc;">Your Wallet is Ready, {username}! 🎉</h2>
+          <img src="{{ url_for('static', filename='logo.svg') }}" alt="PayShield" style="width:120px;margin-bottom:10px;">
+          <h2 style="color:#0066cc;">Your Wallet is Ready! 🎉</h2>
         </div>
         <p style="font-size:16px;color:#333;">Welcome to <strong>PayShield</strong> — your secure digital wallet is now active.</p>
         <div style="background:#eaf3ff;padding:15px;border-left:5px solid #0066cc;margin:20px 0;border-radius:8px;">
           <h3 style="margin:0;">💰 Wallet Balance: <span style="color:#0066cc;">₹{wallet_balance}</span></h3>
         </div>
-        <p style="font-size:15px;color:#555;">You can now send and receive payments instantly using your PayShield Wallet — just like GPay!</p>
+        <p style="font-size:15px;color:#555;">You can now send and receive payments instantly using your PayShield Wallet!</p>
         <div style="text-align:center;margin-top:25px;">
           <a href="#" style="background-color:#0066cc;color:#fff;padding:12px 30px;border-radius:8px;text-decoration:none;font-weight:bold;">Open My Wallet</a>
         </div>
