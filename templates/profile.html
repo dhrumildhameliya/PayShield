@@ -1,141 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <title>Registered Users</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      background-color: #f0f4f8;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    .user-card {
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      margin: 15px auto;
-      padding: 20px;
-      max-width: 600px;
-      transition: transform 0.2s;
-      align-items: center;
-    }
-
-    .user-card:hover {
-      transform: scale(1.02);
-    }
-
-    .user-icon {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background-color: #007bff;
-      /* blue background */
-      color: white;
-      display: flex;
-      justify-content: center;
-      /* horizontally center text */
-      align-items: center;
-      /* vertically center text */
-      font-size: 20px;
-      font-weight: bold;
-      margin: 0 auto;
-      /* centers the circle in its parent container */
-    }
-
-
-    .user-info {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      /* vertically center (if parent has height) */
-      align-items: center;
-      /* horizontally center */
-      text-align: center;
-      height: auto;
-      /* full page height — optional */
-    }
-
-    .user-info h5 {
-      margin: 8px 0;
-      /* spacing between lines */
-      font-size: 18px;
-    }
-
-
-    .user-info p {
-      margin: 0;
-      color: gray;
-    }
-
-    .card {
-      border-radius: 15px;
-      max-width: 500px;
-      margin: auto;
-      /* centers the card */
-    }
-
-    .table th {
-      width: 40%;
-      background-color: #f8f9fa;
-      font-family:Georgia, 'Times New Roman', Times, serif;
-    }
-
-    .table td {
-      font-weight: 500;
-      font-family:Georgia, 'Times New Roman', Times, serif;
-    }
-  </style>
-</head>
-
-<body>
-
-  <div class="container mt-5">
-    <h2 class="text-center mb-4">My Profile</h2>
-
-    <div class="user-card align-items-center">
-      <div class="user-icon">{{ user.email[0].upper() }}</div>
-      <div class="container mt-5">
-        <div class="card shadow p-4">
-          <table class="table table-borderless text-center align-middle">
-            <tbody>
-              <tr>
-                <th>Username</th>
-                <td>{{ user.username }}</td>
-              </tr>
-              <tr>
-                <th>Email</th>
-                <td>{{ user.email }}</td>
-              </tr>
-              <tr>
-                <th>Mobile No</th>
-                <td>{{ user.mobileno }}</td>
-              </tr>
-              <tr>
-                <th>Joined</th>
-                <td>{{ user.created_at.strftime('%d %b %Y') }}</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <div class="text-center mt-3">
-            <a href="{{ url_for('create_bank_account') }}" class="btn btn-success">
-              Create / View Bank Account
-            </a>
-          </div>
-        </div>
-      </div>
-
-    </div>
-    <div class="text-center mt-4">
-      <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
-    </div>
-  </div>
-
-</body>
-
-</html> -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -296,19 +158,32 @@
       </tbody>
     </table>
 
+    <!-- <div class="mb-3"> -->
+    <!-- <a href="{{ url_for('create_bank_account') }}" class="btn btn-outline-primary"> -->
+    <!-- 💳 View Bank Account -->
+    <!-- </a> -->
+    <!-- </div> -->
+    <!-- <a href="{{ url_for('add_bank') }}" class="btn btn-outline-primary">💳 Add Bank Account</a> -->
+    <!-- <div> -->
     <div class="mb-3">
+      {% if account %}
       <a href="{{ url_for('create_bank_account') }}" class="btn btn-outline-primary">
-        💳 Add / View Bank Account
+        💳 View Bank Account
       </a>
+      {% else %}
+      <a href="{{ url_for('add_bank') }}" class="btn btn-outline-primary">
+        💳 Add Bank Account
+      </a>
+      {% endif %}
     </div>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">← Back to Dashboard</a>
+  </div>
 
-    <div>
-      <a href="{{ url_for('dashboard') }}" class="btn btn-primary">← Back to Dashboard</a>
-    </div>
+  <!-- <a href="{{ url_for('view_bank') }}" class="btn btn-success">View Bank Account</a> -->
 
-    <div class="footer">
-      <p>© 2025 PayShield Secure Payments</p>
-    </div>
+  <!-- <div class="footer">
+    <p>© 2025 PayShield Secure Payments</p>
+  </div> -->
   </div>
 
 </body>

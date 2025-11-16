@@ -1,98 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="utf-8">
-  <title>Register - PayShield</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-
-<body class="bg-light">
-  <div class="header">
-    <img src="{{ url_for('static', filename='logo.svg') }}" class="logo-img" alt="PayShield logo">
-    <div>
-      <div class="brand">PayShield</div>
-      <div class="tag">Secure payments, simplified</div>
-    </div>
-  </div>
-
-  <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-5">
-        <div class="card shadow-lg p-4">
-          <div class="card-body">
-            <div class="text-center mb-3">
-              <img src="{{ url_for('static', filename='images/logo.png') }}" alt="PayShield" width="80">
-              <h3 class="mt-2">Register Account</h3>
-              <p class="text-muted">Join PayShield to manage secure payments easily.</p>
-            </div>
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show">
-              You Have Already Register
-              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-            {% endfor %}
-            {% endif %}
-            {% endwith %}
-
-            <form method="POST" onsubmit="return validateForm()">
-              <div class="mb-3">
-                <label for="username" class="form-label">Full Name</label>
-                <input type="text" id="username" name="username" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label for="email" class="form-label">Email Address</label>
-                <input type="email" id="email" name="email" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label for="mobileno" class="form-label">Phone Number</label>
-                <input type="tel" id="mobileno" name="mobileno" class="form-control" required pattern="[0-9]{10}"
-                  maxlength="10">
-              </div>
-              <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" id="password" name="password" class="form-control" required minlength="6">
-              </div>
-              <div class="mb-3">
-                <label for="confirm" class="form-label">Confirm Password</label>
-                <input type="password" id="confirm" name="confirm" class="form-control" required minlength="6">
-              </div>
-              <button type="submit" class="btn btn-primary w-100">Register</button>
-            </form>
-
-            <div class="text-center mt-3">
-              <a href="/login">Already have an account? Login</a>
-            </div>
-
-            <div class="text-center mt-4">
-              <p class="text-muted small">© 2025 PayShield Secure Payment Gateway</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    function validateForm() {
-      const pass = document.getElementById('password').value;
-      const confirm = document.getElementById('confirm').value;
-      if (pass !== confirm) {
-        alert('Passwords do not match!');
-        return false;
-      }
-      return true;
-    }
-  </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-
-</html> -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -119,9 +24,17 @@
     }
 
     @keyframes bgShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
     }
 
     /* Frosted Glass Card */
@@ -242,7 +155,8 @@
       </div>
       <div class="mb-3 text-start">
         <label for="mobileno" class="form-label">Phone Number</label>
-        <input type="tel" id="mobileno" name="mobileno" class="form-control" required pattern="[0-9]{10}" maxlength="10">
+        <input type="tel" id="mobileno" name="mobileno" class="form-control" required pattern="[0-9]{10}"
+          maxlength="10">
       </div>
       <div class="mb-3 text-start">
         <label for="password" class="form-label">Password</label>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <title>Dashboard - PayShield</title>
@@ -16,7 +17,7 @@
     body {
       /* background: linear-gradient(135deg, #4A00E0, #8E2DE2, #00C9FF); */
       background: linear-gradient(145deg, #001F3F, #004E89, #0096C7, #00B4D8);
-      
+
       min-height: 100vh;
       margin: 0;
       font-family: 'Poppins', sans-serif;
@@ -54,6 +55,7 @@
       border-color: #fff;
       border-radius: 30px;
     }
+
     .btn-outline-secondary:hover {
       background: #fff;
       color: #6A00E0;
@@ -69,7 +71,8 @@
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
     }
 
-    .card h4, .card h5 {
+    .card h4,
+    .card h5 {
       font-weight: 600;
     }
 
@@ -93,6 +96,7 @@
         flex-direction: column;
         text-align: center;
       }
+
       .ms-auto {
         margin-top: 10px;
       }
@@ -100,10 +104,10 @@
   </style>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
       const profileBtn = document.getElementById("profileBtn");
       if (profileBtn) {
-        profileBtn.addEventListener("click", function() {
+        profileBtn.addEventListener("click", function () {
           window.location.href = "{{ url_for('profile') }}";
         });
       }
@@ -132,9 +136,15 @@
           <h4>Your PayShield Dashboard</h4>
           <p class="text-light">Quick Actions</p>
           <div class="row g-3 mt-3">
-            <div class="col-sm-6"><button class="btn btn-light w-100">💸 Send Money</button></div>
+            <div class="col-sm-6">
+              <a href="{{ url_for('send_money') }}" class="btn btn-light w-100">💸 Send Money</a>
+            </div>
+
             <div class="col-sm-6"><button class="btn btn-light w-100">📥 Request Money</button></div>
-            <div class="col-sm-6"><button class="btn btn-light w-100">📊 Transactions</button></div>
+            <div class="col-sm-6">
+              <a href="{{ url_for('transaction_history') }}" class="btn btn-light w-100">📜 Transactions</a>
+            </div>
+
             <div class="col-sm-6"><button id="profileBtn" class="btn btn-light w-100">👤 Profile</button></div>
           </div>
         </div>
@@ -150,4 +160,5 @@
   </div>
 
 </body>
+
 </html>
