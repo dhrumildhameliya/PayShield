@@ -580,10 +580,6 @@ def wallet_verify():
 
 @app.route('/add_bank', methods=['GET', 'POST'])
 def add_bank():
-    import mysql.connector
-    import random
-    from datetime import datetime, timedelta
-    from flask import session, flash, redirect, url_for, render_template, request
 
     if 'email' not in session:
         flash("Please log in first.", "warning")
@@ -987,6 +983,7 @@ def send_email_transaction(to_email, subject, body):
 #     - PayShield Security Team
 #     """
 #     send_email_transaction(receiver_email, subject_receiver, message_receiver)
+
 def send_payment_emails(sender_email, sender_name, sender_upi,receiver_email, receiver_name, receiver_upi,amount, note, tx_id):
     sender_app_email = "payshield77@gmail.com"
     sender_password = "jevapqmlljxqkjyj"  # App Password
