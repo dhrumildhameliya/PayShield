@@ -33,6 +33,188 @@ db = mysql.connector.connect(
 )
 cursor = db.cursor()
 
+#ADMIN============================
+from functools import wraps
+import bcrypt
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if 'admin_id' not in session:
+            flash("Admin login required.", "warning")
+            return redirect(url_for('admin_login', next=request.path))
+        return f(*args, **kwargs)
+    return decorated
+
+def get_db():
+    return mysql.connector.connect(host='localhost', user='root', password='', database='payshield')
+@app.route('/admin/login', methods=['GET','POST'])
+def admin_login():
+    if request.method == 'POST':
+        email = request.form.get('email').strip()
+        password = request.form.get('password', '').encode()
+
+        conn = get_db()
+        cur = conn.cursor(dictionary=True)
+        cur.execute("SELECT * FROM admin_users WHERE email=%s", (email,))
+        admin = cur.fetchone()
+        conn.close()
+
+        if admin and bcrypt.checkpw(password, admin['password_hash'].encode()):
+            session['admin_id'] = admin['id']
+            session['admin_email'] = admin['email']
+            session['admin_name'] = admin['username']
+            session['is_super'] = bool(admin['is_super'])
+            flash("Admin logged in.", "success")
+            return redirect(request.args.get('next') or url_for('admin_dashboard'))
+        flash("Invalid email or password.", "danger")
+    return render_template('admin/login.html')
+
+@app.route('/admin/logout')
+@admin_required
+def admin_logout():
+    session.pop('admin_id', None)
+    session.pop('admin_email', None)
+    session.pop('admin_name', None)
+    session.pop('is_super', None)
+    flash("Admin logged out.", "info")
+    return redirect(url_for('admin_login'))
+# Dashboard
+@app.route('/admin')
+@admin_required
+def admin_dashboard():
+    conn = get_db(); cur = conn.cursor(dictionary=True)
+    cur.execute("SELECT COUNT(*) AS total FROM users"); users = cur.fetchone()['total']
+    cur.execute("SELECT COUNT(*) AS total FROM transactions"); tx = cur.fetchone()['total']
+    cur.execute("SELECT COUNT(*) AS total FROM risk_transactions"); risk = cur.fetchone()['total']
+    conn.close()
+    stats = {'users': users, 'transactions': tx, 'risk': risk}
+    return render_template('admin/dashboard.html', stats=stats)
+
+# Users list + actions
+@app.route('/admin/users')
+@admin_required
+def admin_users():
+    conn = get_db(); cur = conn.cursor(dictionary=True)
+    cur.execute("SELECT id, username, email, created_at FROM users ORDER BY id DESC LIMIT 500")
+    rows = cur.fetchall(); conn.close()
+    return render_template('admin/users.html', users=rows)
+
+@app.route('/admin/user/toggle_block/<int:uid>', methods=['POST'])
+@admin_required
+def admin_user_toggle_block(uid):
+    if not session.get('is_super'):
+        flash("Only super admin allowed.", "danger")
+        return redirect(url_for('admin_users'))
+    conn = get_db(); cur = conn.cursor()
+    # simple blocked flag: if column 'is_blocked' exists use it, else create soft block via update (safe approach below assumes column)
+    try:
+        cur.execute("UPDATE users SET is_blocked = NOT IFNULL(is_blocked,0) WHERE id=%s", (uid,))
+    except Exception:
+        # fallback: set a 'is_blocked' column if doesn't exist
+        cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_blocked TINYINT(1) DEFAULT 0")
+        cur.execute("UPDATE users SET is_blocked = 1 WHERE id=%s", (uid,))
+    conn.commit(); conn.close()
+    flash("User block toggled.", "success")
+    return redirect(url_for('admin_users'))
+
+# Transactions list
+@app.route('/admin/transactions')
+@admin_required
+def admin_transactions():
+    conn = get_db(); cur = conn.cursor(dictionary=True)
+    cur.execute("""
+      SELECT t.tx_id, t.amount, t.status, t.created_at,
+             s.username AS sender, r.username AS receiver, t.to_upi
+      FROM transactions t
+      LEFT JOIN users s ON t.from_user_id = s.id
+      LEFT JOIN users r ON t.to_user_id = r.id
+      ORDER BY t.created_at DESC LIMIT 500
+    """)
+    rows = cur.fetchall(); conn.close()
+    return render_template('admin/transactions.html', txs=rows)
+
+# Risk / Fraud list
+@app.route('/admin/fraud')
+@admin_required
+def admin_fraud():
+    conn = get_db(); cur = conn.cursor(dictionary=True)
+    cur.execute("""
+      SELECT rt.id, rt.from_user_id, ru.username AS from_user, rt.to_user_id, tu.username AS to_user,
+             rt.to_upi, rt.amount, rt.note, rt.status, rt.created_at
+      FROM risk_transactions rt
+      LEFT JOIN users ru ON rt.from_user_id = ru.id
+      LEFT JOIN users tu ON rt.to_user_id = tu.id
+      ORDER BY rt.created_at DESC LIMIT 200
+    """)
+    risk_txs = cur.fetchall()
+    cur.execute("SELECT * FROM security_logs ORDER BY timestamp DESC LIMIT 200")
+    logs = cur.fetchall()
+    conn.close()
+    return render_template('admin/fraud.html', risk_txs=risk_txs, logs=logs)
+
+# View single risk tx
+@app.route('/admin/fraud/view/<int:rt_id>')
+@admin_required
+def admin_view_risk(rt_id):
+    conn = get_db(); cur = conn.cursor(dictionary=True)
+    cur.execute("SELECT * FROM risk_transactions WHERE id=%s", (rt_id,))
+    rtx = cur.fetchone()
+    cur.execute("SELECT id, username, email FROM users WHERE id IN (%s, %s)", (rtx['from_user_id'], rtx['to_user_id']))
+    users = cur.fetchall()
+    cur.execute("SELECT * FROM security_logs WHERE user_id IN (%s, %s) ORDER BY timestamp DESC LIMIT 50", (rtx['from_user_id'], rtx['to_user_id']))
+    logs = cur.fetchall()
+    conn.close()
+    # fetch users separately to avoid mismatch
+    conn2 = get_db(); cur2 = conn2.cursor(dictionary=True)
+    cur2.execute("SELECT username,email FROM users WHERE id=%s", (rtx['from_user_id'],)); sender = cur2.fetchone()
+    cur2.execute("SELECT username,email FROM users WHERE id=%s", (rtx['to_user_id'],)); receiver = cur2.fetchone()
+    conn2.close()
+    return render_template('admin/view_risk.html', rtx=rtx, sender=sender, receiver=receiver, logs=logs)
+
+# Action on risk tx
+@app.route('/admin/fraud/action/<int:rt_id>', methods=['POST'])
+@admin_required
+def admin_action_risk(rt_id):
+    action = request.form.get('action')
+    conn = get_db(); cur = conn.cursor()
+    if action == 'approve':
+        cur.execute("UPDATE risk_transactions SET status='APPROVED' WHERE id=%s", (rt_id,))
+    elif action == 'block':
+        cur.execute("UPDATE risk_transactions SET status='REJECTED' WHERE id=%s", (rt_id,))
+        cur.execute("INSERT INTO fraud_checks (user_id, tx_id, reason, status) VALUES ((SELECT from_user_id FROM risk_transactions WHERE id=%s), %s, %s, 'BLOCKED')",
+                    (rt_id, f"RT{rt_id}", "Admin blocked"))
+    else:
+        cur.execute("UPDATE risk_transactions SET status='PENDING' WHERE id=%s", (rt_id,))
+    conn.commit(); conn.close()
+    flash("Action applied.", "success")
+    return redirect(url_for('admin_view_risk', rt_id=rt_id))
+
+# Export risk csv
+@app.route('/admin/fraud/export')
+@admin_required
+def admin_export_risk_csv():
+    conn = get_db(); cur = conn.cursor(dictionary=True)
+    cur.execute("""
+      SELECT rt.id, rt.from_user_id, ru.username AS from_user, ru.email AS from_email,
+             rt.to_user_id, tu.username AS to_user, tu.email AS to_email,
+             rt.to_upi, rt.amount, rt.note, rt.status, rt.created_at
+      FROM risk_transactions rt
+      LEFT JOIN users ru ON rt.from_user_id = ru.id
+      LEFT JOIN users tu ON rt.to_user_id = tu.id
+      ORDER BY rt.created_at DESC
+    """)
+    rows = cur.fetchall(); conn.close()
+    from io import StringIO
+    import csv
+    si = StringIO(); cw = csv.writer(si)
+    cw.writerow(['id','from_user_id','from_user','from_email','to_user_id','to_user','to_email','to_upi','amount','note','status','created_at'])
+    for r in rows:
+        cw.writerow([r.get(k) for k in ['id','from_user_id','from_user','from_email','to_user_id','to_user','to_email','to_upi','amount','note','status','created_at']])
+    output = si.getvalue()
+    from flask import Response
+    return Response(output, mimetype='text/csv', headers={"Content-Disposition":"attachment;filename=risk_transactions.csv"})
+
 # Send OTP Email
 def send_otp(email, otp):
     sender_email = "payshield77@gmail.com"      # your gmail
@@ -97,36 +279,6 @@ def register():
             return redirect(url_for('register'))
 
     return render_template('register.html')
-
-
-# Step 1: Login with email+password
-# @app.route('/', methods=['GET', 'POST'])
-# @app.route('/login', methods=['GET', 'POST'])
-# def login():
-#     if request.method == 'POST':
-#         email = request.form['email']
-#         password = hash_password(request.form['password'])
-
-#         cursor.execute("SELECT id, password FROM users WHERE email=%s", (email,))
-#         user = cursor.fetchone()
-
-#         if user and user[1] == password:
-#             otp = str(random.randint(100000, 999999))
-#             expires_at = datetime.now() + timedelta(minutes=5)
-
-#             cursor.execute("INSERT INTO otp_logs (user_id, otp_code, expires_at) VALUES (%s, %s, %s)",
-#                            (user[0], otp, expires_at))
-#             db.commit()
-
-#             if send_otp(email, otp):
-#                 flash("OTP sent to your email!", "success")
-#                 return render_template('verify.html', email=email)
-#             else:
-#                 flash("Failed to send OTP. Check email settings.", "danger")
-#         else:
-#             flash("Invalid email or password!", "danger")
-
-#     return render_template('login.html')
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
@@ -199,15 +351,7 @@ def verify():
         flash("No OTP found for this email!", "danger")
 
     return render_template('verify.html', email=email)
-
-
-# Dashboard (protected route)
-# @app.route('/dashboard')
-# def dashboard():
-#     if 'user_id' not in session:
-#         return redirect(url_for('login'))
-#     return render_template('dashboard.html', email=session['email'])
-  
+ 
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
@@ -950,40 +1094,6 @@ def send_email_transaction(to_email, subject, body):
         print(f"❌ Email failed: {e}")
         return False
 
-#email send for money transaction
-# def send_payment_emails(sender_email, sender_name, receiver_email, receiver_name, amount, note, tx_id):
-#     """Send transaction success emails to both sender and receiver."""
-
-#     # 1️⃣ Email to sender
-#     subject_sender = "💸 Payment Sent Successfully - PayShield"
-#     message_sender = f"""
-#     Hello {sender_name},
-
-#     ✅ Your payment of ₹{amount:.2f} has been sent successfully to.
-
-#     📎 Transaction ID: {tx_id}
-#     🧾 Note: {note or 'No note provided'}
-
-#     Thank you for using PayShield!
-#     - PayShield Security Team
-#     """
-#     send_email_transaction(sender_email, subject_sender, message_sender)
-
-#     # 2️⃣ Email to receiver
-#     subject_receiver = "💰 Payment Received - PayShield"
-#     message_receiver = f"""
-#     Hello,
-
-#     🎉 You have received ₹{amount:.2f} from {sender_name} (UPI: {sender_email}).
-
-#     📎 Transaction ID: {tx_id}
-#     🧾 Note: {note or 'No note provided'}
-
-#     Enjoy your secure payments with PayShield!
-#     - PayShield Security Team
-#     """
-#     send_email_transaction(receiver_email, subject_receiver, message_receiver)
-
 def send_payment_emails(sender_email, sender_name, sender_upi,receiver_email, receiver_name, receiver_upi,amount, note, tx_id):
     sender_app_email = "payshield77@gmail.com"
     sender_password = "jevapqmlljxqkjyj"  # App Password
@@ -1045,8 +1155,17 @@ Thank you for using PayShield!
     except Exception as e:
         print(f"❌ Failed to send payment emails: {e}")
         return False
+    
+from datetime import datetime, timedelta, date
 
-#SEND MONEY CONFIRM
+def get_client_ip():
+    if request.headers.get('X-Forwarded-For'):
+        return request.headers.get('X-Forwarded-For').split(',')[0].strip()
+    return request.remote_addr
+
+############################################
+# SEND MONEY CONFIRM (with Fraud Detection)
+############################################
 @app.route('/send_money_confirm', methods=['GET', 'POST'])
 def send_money_confirm():
     if 'user_id' not in session or 'pending_tx' not in session:
@@ -1057,98 +1176,309 @@ def send_money_confirm():
     pending = session['pending_tx']
     amount = Decimal(pending['amount'])
 
-    # fetch sender mpin hash & balance for final checks
+    # Fetch stored MPIN + balance
     conn = mysql.connector.connect(host='localhost', user='root', password='', database='payshield')
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT b.wallet_balance, b.mpin_hash FROM bank_accounts b WHERE b.user_id = %s", (user_id,))
+    cursor.execute("SELECT b.wallet_balance, b.mpin_hash FROM bank_accounts b WHERE b.user_id=%s", (user_id,))
     sender = cursor.fetchone()
     conn.close()
 
     if not sender or not sender.get('mpin_hash'):
-        flash("Set MPIN first to complete transactions.", "warning")
+        flash("Please set MPIN first.", "warning")
         return redirect(url_for('set_mpin'))
 
     if request.method == 'POST':
+
+        # ---------- MPIN Validation ----------
         entered_mpin = request.form.get('mpin', '').strip()
-        if not entered_mpin:
-            flash("Enter MPIN.", "danger")
-            return redirect(url_for('send_money_confirm'))
-
-        # verify mpin
         if not check_password_hash(sender['mpin_hash'], entered_mpin):
-            flash("Incorrect MPIN.", "danger")
+            flash("Incorrect MPIN!", "danger")
             return redirect(url_for('send_money_confirm'))
 
-        # Double-check balance
+        # ---------- Balance Check ----------
         if sender['wallet_balance'] < amount:
-            flash("Insufficient balance.", "danger")
+            flash("Insufficient Wallet Balance.", "danger")
             session.pop('pending_tx', None)
             return redirect(url_for('send_money'))
 
-        # Perform atomic DB transaction (deduct + credit + insert tx record)
+        # ---------- FRAUD DETECTION ----------
+        reasons = []
+        risk_score = 0
+
+        # Get true IP (proxy safe)
+        def get_client_ip():
+            if request.headers.get('X-Forwarded-For'):
+                return request.headers.get('X-Forwarded-For').split(',')[0]
+            return request.remote_addr
+
+        user_ip = get_client_ip()
+        user_device = request.user_agent.string
+
+        conn = mysql.connector.connect(host='localhost', user='root', password='', database='payshield')
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT last_login_ip, device_fingerprint FROM users WHERE id=%s", (user_id,))
+        user_profile = cursor.fetchone()
+        conn.close()
+
+        # 1️⃣ New IP Detection
+        if user_profile.get('last_login_ip') and user_profile['last_login_ip'] != user_ip:
+            risk_score += 2
+            reasons.append(f"New IP detected")
+
+        # 2️⃣ New Device Detection
+        if user_profile.get('device_fingerprint') and user_profile['device_fingerprint'] != user_device:
+            risk_score += 3
+            reasons.append("New Device detected")
+
+        # 3️⃣ High Amount Flag
+        if amount > Decimal("20000"):
+            risk_score += 2
+            reasons.append("High Value Transaction")
+
+        # 4️⃣ Decision System
+        if risk_score >= 3:
+            session['risk_tx'] = pending
+            generate_and_send_risk_otp(session['email'], session.get('username', "User"))
+            flash(f"⚠ Security Verification Required: {', '.join(reasons)}", "warning")
+            return redirect(url_for("verify_risk_otp"))
+
+        # ---------- TRANSACTION PROCESS ----------
         conn = mysql.connector.connect(host='localhost', user='root', password='', database='payshield')
         try:
             conn.start_transaction()
             cursor = conn.cursor()
 
             # Deduct from sender
-            cursor.execute("UPDATE bank_accounts SET wallet_balance = wallet_balance - %s WHERE user_id = %s", (str(amount), user_id))
-            # Credit receiver
-            cursor.execute("UPDATE bank_accounts SET wallet_balance = wallet_balance + %s WHERE user_id = %s", (str(amount), pending['to_user_id']))
+            cursor.execute("UPDATE bank_accounts SET wallet_balance = wallet_balance - %s WHERE user_id=%s",
+                           (str(amount), user_id))
 
-            # Create tx id
+            # Credit receiver
+            cursor.execute("UPDATE bank_accounts SET wallet_balance = wallet_balance + %s WHERE user_id=%s",
+                           (str(amount), pending['to_user_id']))
+
+            # Save Tx ID
             tx_id = uuid.uuid4().hex[:20]
             cursor.execute("""
-              INSERT INTO transactions (tx_id, from_user_id, to_user_id, to_upi, amount, note, status)
-              VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO transactions (tx_id, from_user_id, to_user_id, to_upi, amount, note, status)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
             """, (tx_id, user_id, pending['to_user_id'], pending['to_upi'], str(amount), pending.get('note',''), 'SUCCESS'))
 
             conn.commit()
+
         except Exception as e:
             conn.rollback()
-            conn.close()
-            flash("Transaction failed. Please try again.", "danger")
-            print("TX ERROR:", e)
+            flash("Transaction Failed! Try again later.", "danger")
+            print("Error:", e)
             return redirect(url_for('send_money'))
+
         finally:
             conn.close()
 
-        # send emails: sender and receiver
-        # fetch receiver email and sender username
-        conn2 = mysql.connector.connect(host='localhost', user='root', password='', database='payshield')
-        cur2 = conn2.cursor(dictionary=True)
-        cur2.execute("SELECT email FROM users WHERE id = %s", (pending['to_user_id'],))
-        rec = cur2.fetchone()
-        cur2.execute("SELECT username, email FROM users WHERE id = %s", (user_id,))
-        s = cur2.fetchone()
-        conn2.close()
+        # ---------- UPDATE LAST DEVICE + IP ----------
+        conn = mysql.connector.connect(host='localhost', user='root', password='', database='payshield')
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET last_login_ip=%s, device_fingerprint=%s WHERE id=%s",
+                       (user_ip, user_device, user_id))
+        conn.commit()
+        conn.close()
 
-        # prepare email content (use your send_email function)
-        # send_email_transaction(s['email'], "Payment Sent - PayShield",
-        #            f"Hello {s['username']},\n\nYou have sent ₹{amount} to {pending['to_upi']} (tx: {tx_id}).\nNote: {pending.get('note','')}\n\n- PayShield")
-        # if rec:
-        #     send_email_transaction(rec['email'], "Payment Received - PayShield",
-        #                f"Hello,\n\nYou have received ₹{amount} from {s['username']} (UPI: {s['email']}).\nNote: {pending.get('note','')}\n\n- PayShield")
+        # ---------- Send Email Notifications ----------
+        conn = mysql.connector.connect(host='localhost', user='root', password='', database='payshield')
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("SELECT username, email FROM users WHERE id=%s", (user_id,))
+        sender_info = cursor.fetchone()
+
+        cursor.execute("SELECT username, email FROM users WHERE id=%s", (pending['to_user_id'],))
+        receiver_info = cursor.fetchone()
+
+        conn.close()
+
         send_payment_emails(
-        sender_email=s.get('email'),
-        sender_name=s.get('username'),
-        sender_upi=s.get('upi_id'),
-        receiver_email=rec.get('email'),
-        receiver_name=rec.get('username'),
-        receiver_upi=rec.get('to_upi'),
-        amount=amount,
-        note=pending.get('note', ''),
-        tx_id=tx_id
-    )
-        # clear pending_tx
-        session.pop('pending_tx', None)
+            sender_email=sender_info['email'],
+            sender_name=sender_info['username'],
+            sender_upi=pending['to_upi'],
+            receiver_email=receiver_info['email'],
+            receiver_name=receiver_info['username'],
+            receiver_upi=pending['to_upi'],
+            amount=amount,
+            note=pending.get('note',''),
+            tx_id=tx_id
+        )
 
-        flash(f"₹{amount} sent successfully (Tx ID: {tx_id}).", "success")
+        session.pop('pending_tx', None)
+        flash("Payment Successful 🎉", "success")
+
         return redirect(url_for('transaction_success', tx_id=tx_id))
 
-
-    # GET -> render confirm page
     return render_template('send_money_confirm.html', pending=pending, amount=amount)
+
+
+def log_security_event(user_id, event_type, ip=None, device=None, score=0):
+    try:
+        conn = mysql.connector.connect(host='localhost', user='root', password='', database='payshield')
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO security_logs (user_id, event_type, ip_address, device_info, risk_score)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (user_id, event_type, ip, device, score))
+        conn.commit()
+    except Exception as e:
+        print("log_security_event error:", e)
+    finally:
+        try: conn.close()
+        except: pass
+
+@app.route('/verify_risk_otp', methods=['GET', 'POST'])
+def verify_risk_otp():
+    # check risk_tx_id in session
+    risk_tx_id = session.get('risk_tx_id')
+    if not risk_tx_id:
+        flash("No pending risky transaction found.", "warning")
+        return redirect(url_for('send_money'))
+
+    if request.method == 'POST':
+        entered = request.form.get('otp', '').strip()
+        # verify against otp_logs table
+        conn = mysql.connector.connect(host='localhost', user='root', password='', database='payshield')
+        cur = conn.cursor(dictionary=True)
+        cur.execute("SELECT * FROM otp_logs WHERE action_type='RISK_TX' AND is_used=0 ORDER BY id DESC LIMIT 1")
+        otp_row = cur.fetchone()
+        conn.close()
+
+        if not otp_row:
+            flash("OTP not found. Request a new one.", "danger")
+            return redirect(url_for('send_money'))
+
+        expires = otp_row['expires_at']
+        if datetime.utcnow() > expires:
+            flash("OTP expired. Please start the transfer again.", "danger")
+            # mark expired and cleanup risk tx
+            conn = mysql.connector.connect(host='localhost', user='root', password='', database='payshield')
+            cur = conn.cursor()
+            cur.execute("UPDATE otp_logs SET is_used=1 WHERE id = %s", (otp_row['id'],))
+            cur.execute("UPDATE risk_transactions SET status='EXPIRED' WHERE id = %s", (risk_tx_id,))
+            conn.commit()
+            conn.close()
+            session.pop('risk_tx_id', None)
+            session.pop('pending_tx', None)
+            return redirect(url_for('send_money'))
+
+        if entered != otp_row['otp_code']:
+            # increment attempts? simple feedback
+            flash("Incorrect OTP. Try again.", "danger")
+            return redirect(url_for('verify_risk_otp'))
+
+        # OTP correct: mark used and complete the pending risk transaction
+        try:
+            conn = mysql.connector.connect(host='localhost', user='root', password='', database='payshield')
+            cur = conn.cursor(dictionary=True)
+            # get risk tx
+            cur.execute("SELECT * FROM risk_transactions WHERE id = %s AND status='PENDING'", (risk_tx_id,))
+            rtx = cur.fetchone()
+            if not rtx:
+                flash("Pending transaction not found.", "danger")
+                conn.close()
+                session.pop('risk_tx_id', None)
+                return redirect(url_for('send_money'))
+
+            # perform atomic tx (deduct/credit and insert into transactions)
+            conn2 = mysql.connector.connect(host='localhost', user='root', password='', database='payshield')
+            cur2 = conn2.cursor()
+            conn2.start_transaction()
+            # deduct
+            cur2.execute("UPDATE bank_accounts SET wallet_balance = wallet_balance - %s, daily_spent = daily_spent + %s WHERE user_id = %s", (str(rtx['amount']), str(rtx['amount']), rtx['from_user_id']))
+            # credit
+            cur2.execute("UPDATE bank_accounts SET wallet_balance = wallet_balance + %s WHERE user_id = %s", (str(rtx['amount']), rtx['to_user_id']))
+            tx_id = uuid.uuid4().hex[:20]
+            cur2.execute("""INSERT INTO transactions (tx_id, from_user_id, to_user_id, to_upi, amount, note, status)
+                            VALUES (%s, %s, %s, %s, %s, %s, 'SUCCESS')""", (tx_id, rtx['from_user_id'], rtx['to_user_id'], rtx['to_upi'], str(rtx['amount']), rtx['note']))
+            # update risk_transactions to APPROVED
+            cur2.execute("UPDATE risk_transactions SET status='APPROVED' WHERE id = %s", (risk_tx_id,))
+            conn2.commit()
+            conn2.close()
+
+            # mark otp used
+            cur.execute("UPDATE otp_logs SET is_used=1 WHERE id = %s", (otp_row['id'],))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print("verify_risk_otp error:", e)
+            try:
+                conn2.rollback()
+                conn2.close()
+            except:
+                pass
+            flash("Transaction failed during verification. Try again.", "danger")
+            return redirect(url_for('send_money'))
+        finally:
+            # cleanup session
+            session.pop('risk_tx_id', None)
+            session.pop('pending_tx', None)
+
+        # fetch s/rec and upis and send email (same as above)
+        conn3 = mysql.connector.connect(host='localhost', user='root', password='', database='payshield')
+        cur3 = conn3.cursor(dictionary=True)
+        cur3.execute("SELECT username, email FROM users WHERE id = %s", (rtx['from_user_id'],))
+        s = cur3.fetchone()
+        cur3.execute("SELECT username, email FROM users WHERE id = %s", (rtx['to_user_id'],))
+        rec = cur3.fetchone()
+        cur3.execute("SELECT upi_id FROM bank_accounts WHERE user_id = %s", (rtx['from_user_id'],))
+        s_upi = cur3.fetchone()
+        cur3.execute("SELECT upi_id FROM bank_accounts WHERE user_id = %s", (rtx['to_user_id'],))
+        r_upi = cur3.fetchone()
+        conn3.close()
+
+        sender_upi = s_upi['upi_id'] if s_upi else 'N/A'
+        receiver_upi = r_upi['upi_id'] if r_upi else 'N/A'
+
+        send_payment_emails(
+            sender_email=s.get('email'),
+            sender_name=s.get('username'),
+            sender_upi=sender_upi,
+            receiver_email=rec.get('email'),
+            receiver_name=rec.get('username'),
+            receiver_upi=receiver_upi,
+            amount=rtx['amount'],
+            note=rtx.get('note',''),
+            tx_id=tx_id
+        )
+
+        flash("Transaction completed after verification.", "success")
+        return redirect(url_for('transaction_success', tx_id=tx_id))
+
+    # GET
+    return render_template('verify_risk_otp.html')
+
+def generate_and_send_risk_otp(user_id, user_email, username):
+    otp = f"{random.randint(100000, 999999):06d}"
+    expires = datetime.utcnow() + timedelta(minutes=3)
+    # persist OTP in otp_logs table (safer than session)
+    try:
+        conn = mysql.connector.connect(host='localhost', user='root', password='', database='payshield')
+        cur = conn.cursor()
+        cur.execute("INSERT INTO otp_logs (user_id, otp_code, action_type, is_used, expires_at) VALUES (%s, %s, %s, %s, %s)",
+                    (user_id, otp, 'RISK_TX', False, expires))
+        conn.commit()
+    except Exception as e:
+        print("generate_and_send_risk_otp db error:", e)
+    finally:
+        try: conn.close()
+        except: pass
+
+    subject = "PayShield — OTP to confirm your transaction"
+    body = f"""Hello {username},
+
+We detected a transaction that requires additional verification.
+
+Your OTP is: {otp}
+It will expire in 3 minutes.
+
+If you didn't request this, contact support.
+
+— PayShield Security
+"""
+    return send_email_transaction(user_email, subject, body)
 
 
 @app.route('/transactions')

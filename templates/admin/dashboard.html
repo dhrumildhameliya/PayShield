@@ -1,0 +1,14 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<h3>Dashboard</h3>
+<div class="row mt-3">
+  <div class="col-md-3"><div class="card p-3"><h6>Users</h6><h2>{{ stats.users }}</h2></div></div>
+  <div class="col-md-3"><div class="card p-3"><h6>Transactions</h6><h2>{{ stats.transactions }}</h2></div></div>
+  <div class="col-md-3"><div class="card p-3"><h6>Risk Tx</h6><h2>{{ stats.risk }}</h2></div></div>
+</div>
+<div class="mt-4">
+  <a href="{{ url_for('admin_users') }}" class="btn btn-outline-primary">Manage Users</a>
+  <a href="{{ url_for('admin_transactions') }}" class="btn btn-outline-warning">Transactions</a>
+  <a href="{{ url_for('admin_fraud') }}" class="btn btn-outline-danger">Fraud</a>
+</div>
+{% endblock %}

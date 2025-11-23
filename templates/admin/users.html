@@ -1,0 +1,22 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<h4>Users</h4>
+<table class="table table-striped">
+  <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Created</th><th>Action</th></tr></thead>
+  <tbody>
+    {% for u in users %}
+    <tr>
+      <td>{{ u.id }}</td>
+      <td>{{ u.username }}</td>
+      <td>{{ u.email }}</td>
+      <td>{{ u.created_at }}</td>
+      <td>
+        <form method="POST" action="{{ url_for('admin_user_toggle_block', uid=u.id) }}" style="display:inline">
+          <button class="btn btn-sm btn-danger">Toggle Block</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

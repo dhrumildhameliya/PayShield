@@ -162,11 +162,11 @@
                 anywhere.</p>
             <div class="mt-4">
                 <a href="#" class="btn btn-primary btn-lg me-3">Get Started</a>
-                <a href="#" class="btn btn-outline-primary btn-lg">Download App</a>
-            </div>
+                <!-- <a href="#" class="btn btn-outline-primary btn-lg">Download App</a> -->
+            </div><br />
             <div class="container d-flex justify-content-center">
                 <a class="navbar-brand d-flex align-items-center fw-bold text-primary" href="#">
-                    <i class="bi bi-shield-lock-fill fs-3 me-2"></i> PayShield
+                    <i class="bi bi-shield-lock-fill fs-3 me-2"></i>PayShield
                 </a>
             </div>
         </div>
@@ -188,15 +188,15 @@
                 <div class="col-md-3">
                     <div class="feature-card p-4 shadow-sm rounded" style="background-color: #004E89; color: white;">
                         <i class="bi bi-phone-fill fs-1 text-primary"></i>
-                        <h5 class="mt-3 fw-semibold">Mobile Recharge</h5>
-                        <p>Recharge your mobile instantly with just a few taps.</p>
+                        <h5 class="mt-3 fw-semibold">Secure Wallet</h5>
+                        <p>Store cards and bank securely with protection against fraud.</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="feature-card p-4 shadow-sm rounded" style="background-color: #004E89; color: white;">
                         <i class="bi bi-lightning-charge-fill fs-1 text-primary"></i>
-                        <h5 class="mt-3 fw-semibold">Pay Bills</h5>
-                        <p>Pay your electricity, water, and DTH bills easily.</p>
+                        <h5 class="mt-3 fw-semibold">UPI Payments</h5>
+                        <p>Send or receive money instantly using secure UPI simulation.</p>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -353,6 +353,102 @@
         <div class="container">
             <h2 class="fw-bold mb-3">Get Started with PayShield Today!</h2>
             <p class="mb-4">Enjoy a seamless, secure payment experience.</p>
+        </div>
+    </section>
+    <section class="py-5" style="background-color:#F7FBFF; font-family:'Poppins', sans-serif;">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold" style="color:#004E89;">About PayShield</h2>
+                <p class="text-muted">Secure • Smart • Simulator-Based Payment Experience</p>
+            </div>
+
+            <p class="text-center"
+                style="font-size:16px; line-height:1.8; max-width:900px; margin:auto;color: #001F3F;">
+                PayShield is a Payment Gateway Simulator developed as a learning and research project
+                to demonstrate how modern digital payments work. From bank account linking and card authentication to
+                UPIs, QR payments, OTP verification, and fraud detection — PayShield allows users to experience
+                real-world financial operations without using real money.
+            </p>
+
+            <div class="row text-center mt-5">
+                <div class="col-md-3 mb-3">
+                    <div class="p-3 shadow-sm rounded" style="background:#004E89; color:white;">
+                        🔐 <strong>Secure Simulation</strong>
+                        <p class="mt-2 small">OTP, encryption logic & verification layers.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="p-3 shadow-sm rounded" style="background:#004E89; color:white;">
+                        💳 <strong>Real Payment Flow</strong>
+                        <p class="mt-2 small">Bank linking, card input, QR & UPI transaction steps.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="p-3 shadow-sm rounded" style="background:#004E89; color:white;">
+                        🚨 <strong>Fraud Detection</strong>
+                        <p class="mt-2 small">Alerts for duplicate data & suspicious activity.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="p-3 shadow-sm rounded" style="background:#004E89; color:white;">
+                        ⚡ <strong>Interactive UI</strong>
+                        <p class="mt-2 small">Simple, fast, and user-friendly interface.</p>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-5" style="border-top:2px solid #004E89; width:200px; margin:auto;">
+
+            <div style="max-width:900px; margin:auto; text-align:center;">
+                <h4 class="fw-semibold" style="color:#004E89;">Project Purpose</h4>
+                <p style="font-size:16px; line-height:1.8;color:#004E89;">
+                    The goal of PayShield is to help students, developers, and researchers understand
+                    how online transactions work behind the scenes.
+                    This includes authentication flow, database security, payment request lifecycle,
+                    and backend validation — all without connecting to real banking systems.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5" style="font-family:'Poppins', sans-serif;">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold" style="color:#c0d0dc;">Contact Us</h2>
+                <p class="text-muted">Have questions? Reach out to us anytime.</p>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <form method="POST" action="/contact_submit">
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" name="name" placeholder="Enter your name" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-control" name="email" placeholder="example@gmail.com"
+                                required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Message</label>
+                            <textarea class="form-control" name="message" rows="4" placeholder="Your message..."
+                                required></textarea>
+                        </div>
+
+                        <button class="btn btn-primary w-100" style="background-color:#004E89; border:none;">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <p><strong>Email:</strong> payshield77@gmail.com</p>
+                <p><strong>Phone:</strong> +91 99999 99999</p>
+            </div>
         </div>
     </section>
 

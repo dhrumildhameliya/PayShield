@@ -1,0 +1,115 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+
+<h3 class="mb-3">🚨 Fraud & Risk Monitoring</h3>
+<p style="color: white;">Monitor suspicious transactions, behavioral anomalies, device/IP mismatches, and flagged
+  activities.</p>
+
+<!-- Risk Transactions Section -->
+<div class="card mb-4 shadow-sm">
+  <div class="card-header bg-danger text-white">
+    <strong>⚠️ Suspicious Transactions</strong>
+  </div>
+  <div class="card-body table-responsive">
+    {% if risk_txs %}
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Tx ID</th>
+          <th>From</th>
+          <th>To</th>
+          <th>UPI</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Action</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tx in risk_txs %}
+        <tr>
+          <td>{{ tx.id }}</td>
+          <td>{{ tx.from_user }}</td>
+          <td>{{ tx.to_user }}</td>
+          <td>{{ tx.to_upi }}</td>
+          <td>₹{{ tx.amount }}</td>
+          <td>
+            {% if tx.status == "PENDING" %}
+            <span class="badge bg-warning">Pending</span>
+            {% elif tx.status == "APPROVED" %}
+            <span class="badge bg-success">Approved</span>
+            {% else %}
+            <span class="badge bg-danger">Blocked</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('admin_view_risk', rt_id=tx.id) }}" class="btn btn-sm btn-outline-primary">
+              View
+            </a>
+          </td>
+          <td>{{ tx.created_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="text-center text-muted">No suspicious transactions detected 👌</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Security Logs Section -->
+<div class="card shadow-sm">
+  <div class="card-header bg-primary text-white">
+    <strong>🔍 Security Activity Logs</strong>
+  </div>
+  <div class="card-body table-responsive">
+    {% if logs %}
+    <table class="table table-striped align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>User ID</th>
+          <th>Action</th>
+          <th>IP</th>
+          <th>Device</th>
+          <th>Risk Score</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td>{{ log.user_id }}</td>
+          <td><strong>{{ log.event_type }}</strong></td>
+          <td>{{ log.ip_address }}</td>
+          <td>{{ log.device_info }}</td>
+          <td>
+            {% if log.risk_score >= 6 %}
+            <span class="badge bg-danger">{{ log.risk_score }}</span>
+            {% elif log.risk_score >= 3 %}
+            <span class="badge bg-warning">{{ log.risk_score }}</span>
+            {% else %}
+            <span class="badge bg-success">{{ log.risk_score }}</span>
+            {% endif %}
+          </td>
+
+          <td>{{ log.reason }}</td>
+          <td>{{ log.timestamp }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="text-center text-muted">No security events logged yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Export button -->
+<div class="mt-4 text-end">
+  <a href="{{ url_for('admin_export_risk_csv') }}" class="btn btn-outline-danger">
+    📁 Export Suspicious Data (CSV)
+  </a>
+</div>
+
+{% endblock %}
